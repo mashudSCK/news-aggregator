@@ -41,7 +41,7 @@ A beautiful, responsive news aggregator built with **Next.js 14**, **Tailwind CS
 
 ### Prerequisites
 - Node.js 18+ installed
-- NewsAPI key (get it free at [newsapi.org](https://newsapi.org/register))
+- GNews API key (get it free at [gnews.io](https://gnews.io))
 
 ### Installation
 
@@ -60,9 +60,9 @@ A beautiful, responsive news aggregator built with **Next.js 14**, **Tailwind CS
    ```powershell
    Copy-Item .env.example .env.local
    ```
-   - Open `.env.local` and add your NewsAPI key:
+   - Open `.env.local` and add your GNews API key:
    ```env
-   NEXT_PUBLIC_NEWS_API_KEY=your_api_key_here
+   NEXT_PUBLIC_GNEWS_API_KEY=your_api_key_here
    NEXT_PUBLIC_DEFAULT_COUNTRY=us
    NEXT_PUBLIC_DEFAULT_LANGUAGE=en
    ```
@@ -123,7 +123,7 @@ NewsAggregator/
 ## 🔧 Configuration
 
 ### API Configuration
-The app uses **NewsAPI.org** for fetching news. You can customize:
+The app uses **GNews API** for fetching news. You can customize:
 
 - **Country**: Change `NEXT_PUBLIC_DEFAULT_COUNTRY` (e.g., `us`, `ph`, `gb`)
 - **Language**: Change `NEXT_PUBLIC_DEFAULT_LANGUAGE` (e.g., `en`, `es`, `fr`)
@@ -146,7 +146,7 @@ Edit `tailwind.config.js` to customize:
 | **React 18** | UI component library |
 | **Tailwind CSS** | Utility-first CSS framework |
 | **Lucide React** | Beautiful icon library |
-| **NewsAPI** | News data source |
+| **GNews API** | News data source |
 | **Context API** | State management |
 | **localStorage** | Client-side data persistence |
 
@@ -199,7 +199,7 @@ Edit `tailwind.config.js` to customize:
 
 ### Environment Variables on Vercel
 Add these in your Vercel project settings:
-- `NEXT_PUBLIC_NEWS_API_KEY`
+- `NEXT_PUBLIC_GNEWS_API_KEY`
 - `NEXT_PUBLIC_DEFAULT_COUNTRY`
 - `NEXT_PUBLIC_DEFAULT_LANGUAGE`
 
@@ -267,7 +267,7 @@ The app includes several SEO best practices:
 ### Common Issues:
 
 **1. API Rate Limit**
-- NewsAPI free tier: 100 requests/day
+- GNews free tier: 100 requests/day
 - Use caching to reduce API calls
 - Consider upgrading for production
 
@@ -324,7 +324,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 🙏 Acknowledgments
 
-- **NewsAPI** - For providing the news data
+- **GNews API** - For providing the news data
 - **Unsplash** - For fallback images
 - **Lucide** - For beautiful icons
 - **Vercel** - For hosting and deployment

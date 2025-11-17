@@ -1,10 +1,10 @@
 /**
- * Utility functions for fetching news from NewsAPI
- * Documentation: https://newsapi.org/docs
+ * Utility functions for fetching news from GNews API
+ * Documentation: https://gnews.io/docs/v4
  */
 
-const API_KEY = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-const BASE_URL = 'https://newsapi.org/v2';
+const API_KEY = process.env.NEXT_PUBLIC_GNEWS_API_KEY;
+const BASE_URL = 'https://gnews.io/api/v4';
 
 /**
  * Fetch top headlines
@@ -18,13 +18,17 @@ const BASE_URL = 'https://newsapi.org/v2';
 export async function fetchTopHeadlines({ category = '', country = 'us', page = 1, pageSize = 20 }) {
   try {
     const params = new URLSearchParams({
-      apiKey: API_KEY,
-      page: page.toString(),
-      pageSize: pageSize.toString(),
+      token: API_KEY,
+      lang: 'en',
+      max: Math.min(pageSize, 10).toString(), // GNews max is 10 per request
     });
 
-    if (category) params.append('category', category);
-    if (country) params.append('country', country);
+    if (category && category !== 'general') {
+      params.append('topic', category);
+    }
+    if (country) {
+      params.append('country', country);
+    }
 
     const response = await fetch(`${BASE_URL}/top-headlines?${params.toString()}`, {
       next: { revalidate: 300 }, // Cache for 5 minutes
@@ -35,7 +39,13 @@ export async function fetchTopHeadlines({ category = '', country = 'us', page = 
     }
 
     const data = await response.json();
-    return data;
+    
+    // Transform GNews response to match NewsAPI format
+    return {
+      status: 'ok',
+      totalResults: data.totalArticles || 0,
+      articles: data.articles || []
+    };
   } catch (error) {
     console.error('Error fetching top headlines:', error);
     throw error;
@@ -60,14 +70,16 @@ export async function searchNews({ query, language = 'en', sortBy = 'publishedAt
 
     const params = new URLSearchParams({
       q: query,
-      apiKey: API_KEY,
-      language,
-      sortBy,
-      page: page.toString(),
-      pageSize: pageSize.toString(),
+      token: API_KEY,
+      lang: language,
+      max: Math.min(pageSize, 10).toString(), // GNews max is 10 per request
     });
 
-    const response = await fetch(`${BASE_URL}/everything?${params.toString()}`, {
+    if (sortBy === 'publishedAt') {
+      params.append('sortby', 'publishedAt');
+    }
+
+    const response = await fetch(`${BASE_URL}/search?${params.toString()}`, {
       next: { revalidate: 300 },
     });
 
@@ -76,7 +88,13 @@ export async function searchNews({ query, language = 'en', sortBy = 'publishedAt
     }
 
     const data = await response.json();
-    return data;
+    
+    // Transform GNews response to match NewsAPI format
+    return {
+      status: 'ok',
+      totalResults: data.totalArticles || 0,
+      articles: data.articles || []
+    };
   } catch (error) {
     console.error('Error searching news:', error);
     throw error;
