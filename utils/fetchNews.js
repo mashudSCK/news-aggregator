@@ -17,6 +17,10 @@ const BASE_URL = 'https://gnews.io/api/v4';
  */
 export async function fetchTopHeadlines({ category = '', country = 'us', page = 1, pageSize = 20 }) {
   try {
+    if (!API_KEY) {
+      throw new Error('API key is missing. Please add NEXT_PUBLIC_GNEWS_API_KEY to your environment variables.');
+    }
+
     const params = new URLSearchParams({
       token: API_KEY,
       country: country,
@@ -28,6 +32,8 @@ export async function fetchTopHeadlines({ category = '', country = 'us', page = 
       params.append('topic', category);
     }
 
+    console.log('Fetching from:', `${BASE_URL}/top-headlines?${params.toString().replace(API_KEY, 'HIDDEN')}`);
+
     const response = await fetch(`${BASE_URL}/top-headlines?${params.toString()}`, {
       next: { revalidate: 300 }, // Cache for 5 minutes
     });
@@ -35,7 +41,7 @@ export async function fetchTopHeadlines({ category = '', country = 'us', page = 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('GNews API Error:', response.status, errorData);
-      throw new Error(`API Error: ${response.status}`);
+      throw new Error(errorData.message || `API Error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -68,12 +74,18 @@ export async function searchNews({ query, language = 'en', sortBy = 'publishedAt
       throw new Error('Search query is required');
     }
 
+    if (!API_KEY) {
+      throw new Error('API key is missing. Please add NEXT_PUBLIC_GNEWS_API_KEY to your environment variables.');
+    }
+
     const params = new URLSearchParams({
       q: query,
       token: API_KEY,
       lang: language,
       max: Math.min(pageSize, 10).toString(), // GNews max is 10 per request
     });
+
+    console.log('Searching:', `${BASE_URL}/search?${params.toString().replace(API_KEY, 'HIDDEN')}`);
 
     const response = await fetch(`${BASE_URL}/search?${params.toString()}`, {
       next: { revalidate: 300 },
@@ -82,7 +94,7 @@ export async function searchNews({ query, language = 'en', sortBy = 'publishedAt
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('GNews API Error:', response.status, errorData);
-      throw new Error(`API Error: ${response.status}`);
+      throw new Error(errorData.message || `API Error: ${response.status}`);
     }
 
     const data = await response.json();
