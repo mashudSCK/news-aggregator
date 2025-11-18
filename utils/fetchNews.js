@@ -32,19 +32,23 @@ export async function fetchTopHeadlines({ category = '', country = 'us', page = 
       params.append('topic', category);
     }
 
-    console.log('Fetching from:', `${BASE_URL}/top-headlines?${params.toString().replace(API_KEY, 'HIDDEN')}`);
+    const url = `${BASE_URL}/top-headlines?${params.toString()}`;
+    console.log('Fetching from GNews API...');
 
-    const response = await fetch(`${BASE_URL}/top-headlines?${params.toString()}`, {
-      next: { revalidate: 300 }, // Cache for 5 minutes
+    const response = await fetch(url, {
+      cache: 'no-store', // Disable caching for debugging
     });
+
+    console.log('Response status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('GNews API Error:', response.status, errorData);
-      throw new Error(errorData.message || `API Error: ${response.status}`);
+      throw new Error(errorData.errors?.[0] || errorData.message || `API returned ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('Articles received:', data.articles?.length || 0);
     
     // Transform GNews response to match NewsAPI format
     return {
@@ -54,6 +58,11 @@ export async function fetchTopHeadlines({ category = '', country = 'us', page = 
     };
   } catch (error) {
     console.error('Error fetching top headlines:', error);
+    console.error('Error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack?.substring(0, 200)
+    });
     throw error;
   }
 }
