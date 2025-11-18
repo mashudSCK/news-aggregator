@@ -1,10 +1,9 @@
 /**
- * Utility functions for fetching news from GNews API
- * Documentation: https://gnews.io/docs/v4
+ * Utility functions for fetching news via API routes
+ * Uses server-side API routes to avoid CORS issues
  */
 
-const API_KEY = process.env.NEXT_PUBLIC_GNEWS_API_KEY;
-const BASE_URL = 'https://gnews.io/api/v4';
+const API_BASE = '/api';
 
 /**
  * Fetch top headlines
@@ -17,45 +16,34 @@ const BASE_URL = 'https://gnews.io/api/v4';
  */
 export async function fetchTopHeadlines({ category = '', country = 'us', page = 1, pageSize = 20 }) {
   try {
-    if (!API_KEY) {
-      throw new Error('API key is missing. Please add NEXT_PUBLIC_GNEWS_API_KEY to your environment variables.');
-    }
-
     const params = new URLSearchParams({
-      token: API_KEY,
       country: country,
-      max: Math.min(pageSize, 10).toString(), // GNews max is 10 per request
+      max: Math.min(pageSize, 10).toString(),
     });
 
-    // GNews uses 'topic' not 'category'
     if (category && category !== 'general') {
-      params.append('topic', category);
+      params.append('category', category);
     }
 
-    const url = `${BASE_URL}/top-headlines?${params.toString()}`;
-    console.log('Fetching from GNews API...');
+    const url = `${API_BASE}/headlines?${params.toString()}`;
+    console.log('Fetching headlines via API route...');
 
     const response = await fetch(url, {
-      cache: 'no-store', // Disable caching for debugging
+      cache: 'no-store',
     });
 
     console.log('Response status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('GNews API Error:', response.status, errorData);
-      throw new Error(errorData.errors?.[0] || errorData.message || `API returned ${response.status}`);
+      console.error('API Error:', response.status, errorData);
+      throw new Error(errorData.error || `API returned ${response.status}`);
     }
 
     const data = await response.json();
     console.log('Articles received:', data.articles?.length || 0);
     
-    // Transform GNews response to match NewsAPI format
-    return {
-      status: 'ok',
-      totalResults: data.totalArticles || 0,
-      articles: data.articles || []
-    };
+    return data;
   } catch (error) {
     console.error('Error fetching top headlines:', error);
     console.error('Error details:', {
@@ -83,37 +71,31 @@ export async function searchNews({ query, language = 'en', sortBy = 'publishedAt
       throw new Error('Search query is required');
     }
 
-    if (!API_KEY) {
-      throw new Error('API key is missing. Please add NEXT_PUBLIC_GNEWS_API_KEY to your environment variables.');
-    }
-
     const params = new URLSearchParams({
       q: query,
-      token: API_KEY,
       lang: language,
-      max: Math.min(pageSize, 10).toString(), // GNews max is 10 per request
+      max: Math.min(pageSize, 10).toString(),
     });
 
-    console.log('Searching:', `${BASE_URL}/search?${params.toString().replace(API_KEY, 'HIDDEN')}`);
+    const url = `${API_BASE}/search?${params.toString()}`;
+    console.log('Searching via API route...');
 
-    const response = await fetch(`${BASE_URL}/search?${params.toString()}`, {
-      next: { revalidate: 300 },
+    const response = await fetch(url, {
+      cache: 'no-store',
     });
+
+    console.log('Response status:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('GNews API Error:', response.status, errorData);
-      throw new Error(errorData.message || `API Error: ${response.status}`);
+      console.error('API Error:', response.status, errorData);
+      throw new Error(errorData.error || `API returned ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('Articles received:', data.articles?.length || 0);
     
-    // Transform GNews response to match NewsAPI format
-    return {
-      status: 'ok',
-      totalResults: data.totalArticles || 0,
-      articles: data.articles || []
-    };
+    return data;
   } catch (error) {
     console.error('Error searching news:', error);
     throw error;
