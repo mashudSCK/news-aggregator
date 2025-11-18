@@ -34,12 +34,13 @@ export default function CategoryPage() {
         category,
         country: 'us',
         page: pageNum,
-        pageSize: 12,
+        pageSize: 10,
       });
 
       if (data.articles && data.articles.length > 0) {
         setArticles(prev => append ? [...prev, ...data.articles] : data.articles);
-        setHasMore(data.articles.length === 12);
+        // GNews free tier doesn't support pagination - only returns 10 articles total
+        setHasMore(false);
       } else {
         setHasMore(false);
       }

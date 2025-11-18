@@ -21,8 +21,9 @@ export default function NewsCard({ article, priority = false }) {
     }
   };
 
-  const imageUrl = !imageError && article.urlToImage
-    ? article.urlToImage
+  // GNews API uses 'image' field, NewsAPI uses 'urlToImage'
+  const imageUrl = !imageError && (article.image || article.urlToImage)
+    ? (article.image || article.urlToImage)
     : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&auto=format&fit=crop';
 
   return (

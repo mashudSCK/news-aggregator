@@ -19,15 +19,13 @@ export async function fetchTopHeadlines({ category = '', country = 'us', page = 
   try {
     const params = new URLSearchParams({
       token: API_KEY,
-      lang: 'en',
+      country: country,
       max: Math.min(pageSize, 10).toString(), // GNews max is 10 per request
     });
 
+    // GNews uses 'topic' not 'category'
     if (category && category !== 'general') {
       params.append('topic', category);
-    }
-    if (country) {
-      params.append('country', country);
     }
 
     const response = await fetch(`${BASE_URL}/top-headlines?${params.toString()}`, {
@@ -35,6 +33,8 @@ export async function fetchTopHeadlines({ category = '', country = 'us', page = 
     });
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('GNews API Error:', response.status, errorData);
       throw new Error(`API Error: ${response.status}`);
     }
 
@@ -75,15 +75,13 @@ export async function searchNews({ query, language = 'en', sortBy = 'publishedAt
       max: Math.min(pageSize, 10).toString(), // GNews max is 10 per request
     });
 
-    if (sortBy === 'publishedAt') {
-      params.append('sortby', 'publishedAt');
-    }
-
     const response = await fetch(`${BASE_URL}/search?${params.toString()}`, {
       next: { revalidate: 300 },
     });
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('GNews API Error:', response.status, errorData);
       throw new Error(`API Error: ${response.status}`);
     }
 
